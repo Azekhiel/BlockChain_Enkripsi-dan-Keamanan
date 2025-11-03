@@ -1,0 +1,9 @@
+INFORMASI JARINGAN DEVELOPMENT (Geth --dev)
+
+Tipe Jaringan: Proof-of-Authority (PoA) Ephemeral
+Endpoint RPC: http://localhost:8545
+
+Akun Developer (Deployer):
+- Alamat: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
+- Kunci Privat: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7341235D80
+- Password: TIDAK ADA (otomatis unlocked)
