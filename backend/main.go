@@ -13,6 +13,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gin-contrib/cors" // <-- TAMBAHKAN INI
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -105,14 +106,30 @@ func init() {
 	log.Println("--- Inisialisasi Selesai ---")
 }
 
-// --- Fungsi Main (Sama) ---
+// --- Fungsi Main (DIPERBARUI DENGAN CORS) ---
 func main() {
-	// ... (Sama persis seperti sebelumnya)
 	r := gin.Default()
+
+	// =================================================================
+	// === TAMBAHAN BARU UNTUK MEMPERBAIKI "NETWORK ERROR" (CORS) ===
+	// =================================================================
+	config := cors.DefaultConfig()
+	// Hanya izinkan frontend Anda di localhost:3000
+	config.AllowOrigins = []string{"http://localhost:3000"} 
+	// Izinkan metode POST (untuk mengirim data) dan OPTIONS (untuk pre-flight)
+	config.AllowMethods = []string{"GET", "POST", "OPTIONS"} 
+	// PENTING: Izinkan header kustom X-Signature Anda
+	config.AllowHeaders = []string{"Origin", "Content-Type", "X-Signature"} 
+	
+	r.Use(cors.New(config))
+	// =================================================================
+
+	// Rute Anda yang sudah ada (tidak berubah)
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"message": "pong"})
 	})
 	r.POST("/api/v1/finance/data", handleFinanceData)
+	
 	log.Println("Menjalankan server API di http://localhost:8080 ...")
 	r.Run(":8080")
 }
@@ -124,45 +141,38 @@ func handleFinanceData(c *gin.Context) {
 
 	// === VERIFIKASI #1: AUTENTIKASI (KTP) ===
 	// ... (Tidak ada perubahan, kode Verifikasi #1 sama)
-	signatureHex := c.GetHeader("X-Signature")
-	if signatureHex == "" { /* ... */
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Header X-Signature tidak ditemukan"})
-		return
-	}
-	sig, err := hexutil.Decode(signatureHex)
-	if err != nil { /* ... */
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Format signature salah"})
-		return
-	}
-	if sig[64] == 27 || sig[64] == 28 {
-		sig[64] -= 27
-	}
+	// === VERIFIKASI #1: AUTENTIKASI (KTP) ===
 	bodyBytes, err := c.GetRawData()
-	if err != nil { /* ... */
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Body request tidak valid"})
 		return
 	}
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
 	var req AuthRequest
-	if err := c.ShouldBindJSON(&req); err != nil { /* ... */
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Format JSON body salah"})
 		return
 	}
-	msgHash := crypto.Keccak256Hash(bodyBytes)
-	pubKeyBytes, err := crypto.Ecrecover(msgHash.Bytes(), sig)
-	if err != nil { /* ... */
+
+	// === VERIFIKASI #1: AUTENTIKASI (EIP-191) ===
+	signatureHex := c.GetHeader("X-Signature")
+	if signatureHex == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Header X-Signature tidak ditemukan"})
+		return
+	}
+
+	// Ubah body mentah kembali menjadi string untuk verifikasi
+	bodyString := string(bodyBytes)
+	fromAddress := common.HexToAddress(req.FromAddress)
+
+	if !verifyEIP191Signature(signatureHex, bodyString, fromAddress) {
+		log.Printf("GAGAL (Verifikasi #1): Tanda tangan EIP-191 tidak valid untuk %s", req.FromAddress)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Tanda tangan tidak valid"})
 		return
 	}
-	pubKey, _ := crypto.UnmarshalPubkey(pubKeyBytes)
-	recoveredAddress := crypto.PubkeyToAddress(*pubKey)
-	fromAddress := common.HexToAddress(req.FromAddress)
-	if recoveredAddress != fromAddress { /* ... */
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Tanda tangan tidak cocok dengan alamat"})
-		return
-	}
-	log.Printf("SUKSES (Verifikasi #1): Tanda tangan untuk %s berhasil diverifikasi!", recoveredAddress.Hex())
 
+	recoveredAddress := fromAddress // Kita bisa percaya ini sekarang
+	log.Printf("SUKSES (Verifikasi #1): Tanda tangan EIP-191 untuk %s berhasil diverifikasi!", recoveredAddress.Hex())
 	// === VERIFIKASI #2: ANTI-REPLAY (Tiket Sekali Pakai) ===
 	// ... (Tidak ada perubahan, kode Verifikasi #2 sama)
 	userAddr := req.FromAddress
@@ -277,4 +287,38 @@ func logAccessAsync(userAddress common.Address, roleUsed common.Hash) {
 	}
 
 	log.Printf("[Async Logger] SUKSES! Transaksi logging terkirim. Hash: %s", signedTx.Hash().Hex())
+}
+
+// =================================================================
+// === FUNGSI BARU: Verifikasi Tanda Tangan EIP-191 ===
+// =================================================================
+
+// verifyEIP191Signature memverifikasi tanda tangan EIP-191 (standar ethers.js)
+func verifyEIP191Signature(signatureHex string, message string, expectedAddress common.Address) bool {
+	sig, err := hexutil.Decode(signatureHex)
+	if err != nil {
+		log.Printf("[EIP191] Gagal decode signature: %v", err)
+		return false
+	}
+
+	// Ethers.js mengirim V dengan 27/28, Go-ethereum butuh 0/1
+	if sig[64] == 27 || sig[64] == 28 {
+		sig[64] -= 27
+	}
+
+	// Ini adalah "magic" dari EIP-191
+	// Kita buat ulang hash yang sama persis seperti yang dibuat ethers.js
+	eip191Message := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(message), message)
+	msgHash := crypto.Keccak256Hash([]byte(eip191Message))
+
+	pubKeyBytes, err := crypto.Ecrecover(msgHash.Bytes(), sig)
+	if err != nil {
+		log.Printf("[EIP191] Gagal ecrecover: %v", err)
+		return false
+	}
+
+	pubKey, _ := crypto.UnmarshalPubkey(pubKeyBytes)
+	recoveredAddress := crypto.PubkeyToAddress(*pubKey)
+
+	return recoveredAddress == expectedAddress
 }
