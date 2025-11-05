@@ -15,6 +15,7 @@ contract AuditableRBAC is AccessControl {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant FINANCE_ROLE = keccak256("FINANCE_ROLE");
     bytes32 public constant LOGGER_ROLE = keccak256("LOGGER_ROLE");
+    bytes32 public constant KARYAWAN_ROLE = keccak256("KARYAWAN_ROLE");
 
     // --- Event Log (FIXED) ---
     // Menggunakan uint256 (bukan uint26)
@@ -34,6 +35,7 @@ contract AuditableRBAC is AccessControl {
         // Memberi Anda hak ADMIN_ROLE dan LOGGER_ROLE awal.
         _grantRole(ADMIN_ROLE, msg.sender);
         _grantRole(LOGGER_ROLE, msg.sender);
+        _grantRole(KARYAWAN_ROLE, msg.sender);
     }
 
     /**

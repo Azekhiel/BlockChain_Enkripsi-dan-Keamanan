@@ -10,6 +10,7 @@ geth --datadir ./chaindata ^
 --http.addr "localhost" ^
 --http.port 8545 ^
 --http.api "eth,net,web3,personal"
+--ipcapi "admin,debug,eth,miner,net,personal,txpool,web3"
 
 echo Node Geth dihentikan.
 pause
