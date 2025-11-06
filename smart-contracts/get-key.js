@@ -4,7 +4,7 @@ const { ethers } = require('ethers'); // Kita tetap butuh Ethers v5
 
 async function main() {
   // 1. Ganti dengan NAMA FILE KEYSTORE Anda yang benar
-  const keystoreFileName = "UTC--2025-11-03T15-06-54.692920300Z--71562b71999873db5b286df957af199ec94617f7";
+  const keystoreFileName = "UTC--2025-11-05T19-54-52.512614900Z--153a5212b0ea63239021410dfa864c373a254f2c";
   
   // 2. Ganti dengan PASSWORD KOSONG (karena --dev)
   const password = ""; 

@@ -1,0 +1,306 @@
+// pages/index.tsx
+import { useState } from 'react';
+import { ethers } from 'ethers';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+
+// Helper untuk Cek apakah window.ethereum (MetaMask) ada
+const getProvider = () => {
+  if (typeof window !== 'undefined' && (window as any).ethereum) {
+    return new ethers.BrowserProvider((window as any).ethereum);
+  }
+  return null;
+};
+
+// Tipe data untuk AuthRequest (sesuai main.go)
+interface AuthBody {
+  fromAddress: string;
+  message: string;
+  nonce: number;
+}
+
+// Tipe data untuk SetBudget (sesuai main.go)
+interface SetBudgetBody extends AuthBody {
+  roleName: string;
+  budget: number;
+}
+
+export default function Home() {
+  const [address, setAddress] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  // State generik untuk menampilkan respons JSON apa pun
+  const [responseData, setResponseData] = useState<string | null>(null);
+
+  // --- Fungsi untuk Tombol Connect Wallet (Tidak Berubah) ---
+  const connectWallet = async () => {
+    const provider = getProvider();
+    if (!provider) {
+      toast.error('MetaMask tidak terdeteksi. Silakan install MetaMask.');
+      return;
+    }
+    try {
+      const accounts = await provider.send('eth_requestAccounts', []);
+      setAddress(accounts[0]);
+      toast.success('Wallet terhubung!');
+    } catch (error) {
+      console.error(error);
+      toast.error('Gagal menghubungkan wallet.');
+    }
+  };
+
+  // --- Fungsi untuk Tombol Disconnect ---
+  const disconnectWallet = () => {
+    setAddress(null);
+    setResponseData(null); // Bersihkan juga respons lama
+    toast.success('Wallet terputus!');
+  };  
+
+  // --- HELPER BARU: Membuat Request Bertanda Tangan ---
+  // Ini adalah inti dari Verifikasi #1 (AuthN) & #2 (Nonce)
+// --- HELPER BARU: Membuat Request Bertanda Tangan (FIXED) ---
+const createSignedRequest = async (
+  body: AuthBody | SetBudgetBody
+): Promise<{ body: string; signature: string } | null> => {
+  const provider = getProvider();
+  if (!provider || !address) {
+    toast.error('Wallet tidak terhubung.');
+    return null;
+  }
+
+  try {
+    const signer = await provider.getSigner();
+
+    // ===================================
+    // === INI ADALAH PERBAIKANNYA ===
+    // ===================================
+    
+    // 1. Ambil HANYA message-nya. INI YANG DITANDATANGANI.
+    // (Backend Anda hanya memverifikasi field 'message')
+    const messageToSign = body.message;
+
+    // 2. Minta tanda tangan HANYA untuk message itu.
+    const signature = await signer.signMessage(messageToSign);
+
+    // 3. Kirim SELURUH body JSON.
+    const bodyString = JSON.stringify(body);
+
+    // 4. Kembalikan body LENGKAP dan signature yang sudah benar.
+    return { body: bodyString, signature };
+    // ===================================
+
+  } catch (error) {
+    console.error(error);
+    toast.error('Gagal menandatangani pesan. (User menolak?)');
+    return null;
+  }
+};
+
+// --- FUNGSI HELPER UTAMA (Panggil API) - DIPERBAIKI ---
+const callApi = async (endpoint: string, body: AuthBody | SetBudgetBody) => {
+  setLoading(true);
+  setResponseData(null);
+  const toastId = toast.loading('Memverifikasi dengan Backend...');
+
+  // 1. Dapatkan tanda tangan (HANYA DARI MESSAGE)
+  const provider = getProvider();
+  if (!provider || !address) {
+    toast.error('Wallet tidak terhubung.', { id: toastId });
+    setLoading(false);
+    return;
+  }
+
+  let signature: string;
+  try {
+    const signer = await provider.getSigner();
+    
+    // Backend (main.go) hanya memverifikasi message-nya
+    // Ini sudah benar (sesuai log MetaMask Anda)
+    const messageToSign = body.message; 
+    signature = await signer.signMessage(messageToSign);
+  } catch (error) {
+    toast.error('Tanda tangan dibatalkan.', { id: toastId });
+    setLoading(false);
+    return;
+  }
+
+  // ===================================
+  // === INI ADALAH PERBAIKANNYA ===
+  // ===================================
+  
+  // 2. MASUKKAN TANDA TANGAN KE DALAM BODY JSON
+  // Ini agar cocok dengan main.go dan client.go
+  const bodyWithSignature = {
+    ...body,
+    signature: signature,
+  };
+  
+  // ===================================
+
+  try {
+    // 3. Panggil API Backend Go Anda
+    const response = await axios.post(
+      `http://localhost:8080${endpoint}`,
+      bodyWithSignature, // <-- KIRIM BODY LENGKAP (TERMASUK SIGNATURE)
+      {
+        headers: {
+          // 'X-Signature' TIDAK DIPAKAI LAGI
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    // 4. Tampilkan Hasil (Sukses)
+    setResponseData(JSON.stringify(response.data, null, 2));
+    toast.success('Sukses! Respons diterima.', { id: toastId });
+  } catch (error: any) {
+    // 4. Tampilkan Hasil (Gagal)
+    const errorMessage =
+      error.response?.data?.error || error.message || 'Terjadi kesalahan';
+    setResponseData(JSON.stringify(error.response?.data || error.message, null, 2));
+    toast.error(`Gagal: ${errorMessage}`, { id: toastId });
+  } finally {
+    setLoading(false);
+  }
+};
+  // --- FUNGSI PER ROLE (Dipanggil oleh Tombol) ---
+
+  const handleKaryawanAccess = () => {
+    if (!address) return;
+    const body: AuthBody = {
+      fromAddress: address,
+      message: `Moli-Milo_Auth_Nonce_${Date.now()}`,
+      nonce: Date.now(),
+    };
+    callApi('/api/v1/karyawan/data', body);
+  };
+
+  const handleFinanceAccess = () => {
+    if (!address) return;
+    const body: AuthBody = {
+      fromAddress: address,
+      message: `Moli-Milo_Auth_Nonce_${Date.now()}`,
+      nonce: Date.now(),
+    };
+    callApi('/api/v1/finance/laporan', body);
+  };
+  
+  const handleAdminDashboard = () => {
+    if (!address) return;
+    const body: AuthBody = {
+      fromAddress: address,
+      message: `Moli-Milo_Auth_Nonce_${Date.now()}`,
+      nonce: Date.now(),
+    };
+    callApi('/api/v1/admin/dashboard', body);
+  };
+
+  const handleAdminSetBudget = () => {
+    if (!address) return;
+    // Ini adalah request yang butuh body ekstra (sesuai main.go)
+    const body: SetBudgetBody = {
+      fromAddress: address,
+      message: `Moli-Milo_Auth_Nonce_${Date.now()}`,
+      nonce: Date.now(),
+      roleName: "FINANCE_ROLE", // Hardcode untuk tes
+      budget: 500             // Hardcode untuk tes
+    };
+    callApi('/api/v1/admin/budget', body);
+  };
+
+  // --- Tampilan (JSX + Tailwind) ---
+  return (
+    <main className="flex min-h-screen flex-col items-center bg-gray-900 p-12 text-white">
+      <div className="w-full max-w-2xl">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+  <h1 className="text-3xl font-bold">🛡️ Moli-Milo Dashboard</h1>
+  {address ? (
+    // --- UBAH AREA INI ---
+    <div className="flex items-center space-x-2">
+      <div className="p-2 bg-gray-800 border border-gray-700 rounded-lg text-sm font-mono">
+        {`✅ ${address.substring(0, 6)}...${address.substring(address.length - 4)}`}
+      </div>
+      <button
+        onClick={disconnectWallet}
+        title="Disconnect"
+        className="px-3 py-2 bg-red-600 rounded-lg font-semibold hover:bg-red-700"
+      >
+        X
+      </button>
+    </div>
+          ) : (
+            <button
+              onClick={connectWallet}
+              className="px-4 py-2 bg-blue-600 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Connect Wallet
+            </button>
+          )}
+        </div>
+
+        {/* =================================== */}
+        {/* === Kumpulan Tombol Tes RBAC === */}
+        {/* =================================== */}
+
+        {/* Card Karyawan */}
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-xl mb-6">
+          <h2 className="text-xl font-semibold mb-2">Area Karyawan</h2>
+          <p className="text-gray-400 mb-4">Tes: Coba akses `/api/v1/karyawan/data` (Butuh `KARYAWAN_ROLE`)</p>
+          <button
+            onClick={handleKaryawanAccess}
+            disabled={!address || loading}
+            className="w-full px-4 py-3 bg-blue-600 rounded-lg font-bold hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Memverifikasi...' : '1. Ambil Data Karyawan'}
+          </button>
+        </div>
+
+        {/* Card Finance */}
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-xl mb-6">
+          <h2 className="text-xl font-semibold mb-2">Area Finance</h2>
+          <p className="text-gray-400 mb-4">Tes: Coba akses `/api/v1/finance/laporan` (Butuh `FINANCE_ROLE`)</p>
+          <button
+            onClick={handleFinanceAccess}
+            disabled={!address || loading}
+            className="w-full px-4 py-3 bg-green-600 rounded-lg font-bold hover:bg-green-700 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Memverifikasi...' : '2. Ambil Laporan Keuangan'}
+          </button>
+        </div>
+
+        {/* Card Admin */}
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 shadow-xl mb-6">
+          <h2 className="text-xl font-semibold mb-2">Area Admin</h2>
+          <p className="text-gray-400 mb-4">Tes: Coba akses endpoint Admin (Butuh `ADMIN_ROLE`)</p>
+          <div className="space-y-4">
+            <button
+              onClick={handleAdminDashboard}
+              disabled={!address || loading}
+              className="w-full px-4 py-3 bg-red-600 rounded-lg font-bold hover:bg-red-700 transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Memverifikasi...' : '3. Ambil Data Dashboard Admin'}
+            </button>
+            <button
+              onClick={handleAdminSetBudget}
+              disabled={!address || loading}
+              className="w-full px-4 py-3 bg-yellow-600 text-black rounded-lg font-bold hover:bg-yellow-700 transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Memverifikasi...' : '4. Set Budget Finance (Write Tx)'}
+            </button>
+          </div>
+        </div>
+
+
+        {/* Result Area */}
+        {responseData && (
+          <div className="mt-6 p-4 bg-gray-950 border border-gray-700 rounded-lg">
+            <h3 className="font-semibold text-gray-400">Respons Mentah dari Backend:</h3>
+            <pre className="text-white mt-2 font-mono text-sm whitespace-pre-wrap break-all">
+              {responseData}
+            </pre>
+          </div>
+        )}
+      </div>
+    </main>
+  );
+}

@@ -1,0 +1,25 @@
+=============== Nov 6, 2025 (+07) ===============
+02:33:50.348109 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+02:33:50.350105 manifest error: leveldb: manifest corrupted (field 'comparer'): short read [file=MANIFEST-000020] (skipped)
+02:33:50.350105 manifest error: leveldb: manifest corrupted (field 'comparer'): short read [file=MANIFEST-000020] (skipped)
+02:33:50.350105 manifest error: leveldb: manifest corrupted (field 'comparer'): short read [file=MANIFEST-000020] (skipped)
+=============== Nov 6, 2025 (+07) ===============
+02:33:50.351404 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+02:33:50.355363 table@recovery F·1
+02:33:50.355363 table@recovery recovering @22
+02:33:50.356964 table@recovery unrecoverable @22 Ck·0 Cb·0 S·2190
+02:33:50.356964 table@recovery recovered F·1 N·0 Gk·0 Ck·0 Q·0
+02:33:50.367790 version@stat F·[] S·0B[] Sc·[]
+02:33:50.369849 db@open opening
+02:33:50.371569 journal@recovery F·1
+02:33:50.374211 journal@recovery recovering @19
+02:33:50.375034 journal@drop journal-19 S·464B "invalid chunk type 0x5"
+02:33:50.376068 version@stat F·[] S·0B[] Sc·[]
+02:33:50.379157 db@janitor F·5 G·3
+02:33:50.379157 db@janitor removing table-22
+02:33:50.380188 remove 000022.ldb: remove D:\Kuliah\SMT 7\Enkripsi\UTS\BlockChain_Enkripsi-dan-Keamanan\chaindata\geth\chaindata\000022.ldb: The system cannot find the file specified. (old name)
+02:33:50.380188 db@janitor removing manifest-15
+02:33:50.380705 db@janitor removing manifest-20
+02:33:50.381223 db@open done T·11.0822ms
+02:33:50.382775 db@close closing
+02:33:50.383290 db@close done T·515.3µs

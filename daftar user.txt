@@ -1,0 +1,62 @@
+cara bikin user:
+//gajadi pake clef
+clef newaccount --keystore ./chaindata/keystore
+
+finance:
+Public address of the key:   0xEc97a6603E01e45F37B7006A3A6023489767a686
+Path of the secret key file: chaindata\keystore\UTC--2025-11-05T20-14-19.167036900Z--ec97a6603e01e45f37b7006a3a6023489767a686
+
+
+password = finance-pass123
+Membaca file keystore dari: D:\Kuliah\SMT 7\Enkripsi\UTS\BlockChain_Enkripsi-dan-Keamanan\chaindata\keystore\UTC--2025-11-05T08-19-57.619553900Z--bd0ddc3bb386096dab7b055fe1e17b45a4264d14
+Mendekripsi file dengan password...
+
+✅ BERHASIL!
+Alamat Anda: 0xEc97a6603E01e45F37B7006A3A6023489767a686
+🔑 PRIVATE KEY ANDA (JANGAN BAGIKAN!):
+0x01bd3d5373318113715da2dfcb3ed9816baf9b13be9ad443c698e0992cd87a8d
+
+karyawan:
+Public address of the key:   0x6cD04d1542Ab5d6DEdFCFc5D741DECd68d4505a8
+Path of the secret key file: chaindata\keystore\UTC--2025-11-05T20-11-05.895860800Z--6cd04d1542ab5d6dedfcfc5d741decd68d4505a8
+
+- You can share your public address with anyone. Others need it to interact with you.
+- You must NEVER share the secret key with anyone! The key controls access to your funds!
+- You must BACKUP your key file! Without the key, it's impossible to access account funds!
+- You must REMEMBER your password! Without the password, it's impossible to decrypt the key!
+
+password : karyawan-pass123
+✅ BERHASIL!
+Alamat Anda: 0x6cD04d1542Ab5d6DEdFCFc5D741DECd68d4505a8
+🔑 PRIVATE KEY ANDA (JANGAN BAGIKAN!):
+0x54d8d041a84532f2151073772760361d55685338ea1a35ccd2fa4acfa00d237a
+
+admin:
+INFO [11-05|15:27:00.102] Your new key was generated               address=0x8ec523694500708Da12dBAB33A1f5f598dFA3cd6
+WARN [11-05|15:27:00.104] Please backup your key file!             path="D:\Kuliah\SMT 7\Enkripsi\UTS\BlockChain_Enkripsi-dan-Keamanan\chaindata\keystore\UTC--2025-11-05T08-26-57.546394900Z--8ec523694500708da12dbab33a1f5f598dfa3cd6"
+WARN [11-05|15:27:00.104] Please remember your password!
+Generated account 0x8ec523694500708Da12dBAB33A1f5f598dFA3cd6
+
+password : admin-pass123
+
+admin-baru:
+D:\Kuliah\SMT 7\Enkripsi\UTS\BlockChain_Enkripsi-dan-Keamanan>geth account new --datadir .\chaindata
+INFO [11-06|02:40:15.739] Maximum peer count                       ETH=50 LES=0 total=50
+Your new account is locked with a password. Please give a password. Do not forget this password.
+Password:
+Repeat password: 
+
+Your new key was generated
+
+Public address of the key:   0x153A5212b0eA63239021410dfa864c373a254F2c
+Path of the secret key file: chaindata\keystore\UTC--2025-11-05T19-54-52.512614900Z--153a5212b0ea63239021410dfa864c373a254f2c
+
+✅ BERHASIL!
+Alamat Anda: 0x153A5212b0eA63239021410dfa864c373a254F2c
+🔑 PRIVATE KEY ANDA (JANGAN BAGIKAN!):
+0xf7dc752e87753bdfc58ef2ea378c2bc7f21a20da0a3cf386743f6d08c48cabd4
+
+- You can share your public address with anyone. Others need it to interact with you.
+- You must NEVER share the secret key with anyone! The key controls access to your funds!
+- You must BACKUP your key file! Without the key, it's impossible to access account funds!
+- You must REMEMBER your password! Without the password, it's impossible to decrypt the key!

@@ -1,0 +1,106 @@
+Oh iya, saya mau nanti di FE, kan bisa login dari wallet berbagai user ya, kalo admin, tampilannya lengkap, termasuk buat nampilin log dan lain sebagainya, bisa ngatur budget role juga, pokoknya semua fitur admin tadi jadi ada UInya di FE. Semua fitur finance juga, semua fitur karyawan juga. Nah, biar bisa gitu kan BEnya harus ngasih respons yang sesuai, gk usah urusin FEnya dulu, urusin BEnya dulu aja, biar bisa support semua itu tadi wkwk. semangat bang
+
+projek saya itu jadi di 1 folder utama, dan di dalam folder utama itu, ada 
+./backend
+./chaindata
+./smart-contracts
+
+yg your_project/... isinya gmn?
+
+coba list daftar semua file .go yg harus dibuat, gk usah bikin isinya dulu
+
+hmm, ini simpen dulu deh, coba buatin rangkuman perintah yg saya buat untuk backend proyek ini dan list file backendnya, dan nama proyeknya "moli-milo"
+
+Tentu. Beres brutal!
+
+Berikut adalah rangkuman langkah-langkah yang akan Anda lakukan untuk **Komponen 3: Backend Go** proyek **"Moli-Milo"**, serta daftar lengkap file Go yang akan Anda buat.
+
+---
+
+## 🛠️ Rangkuman Perintah Backend Go (Klien Geth)
+
+| # | Perintah Shell | Keterangan |
+| :--- | :--- | :--- |
+| **1.** | `cd backend` | Masuk ke folder Backend utama Anda. |
+| **2.** | `go mod init MoliMiloBackend` | Inisialisasi *module* Go Anda. (Gantikan `your_project` sebelumnya). |
+| **3.** | `go get github.com/ethereum/go-ethereum` | Instal pustaka Geth Go (`ethclient`, dll.) untuk koneksi. |
+| **4.** | `go get github.com/gin-gonic/gin` | Instal *framework* web Go (Misalnya Gin) untuk *routing* API. |
+| **5.** | `abigen --abi ./../smart-contracts/artifacts/contracts/AuditableRBAC.sol/AuditableRBAC.json --pkg blockchain --type AuditableRBAC --out ./blockchain/AuditableRBAC.go` | **Buat Go Binding.** Ini mengubah kontrak Solidity menjadi kode Go yang bisa dipanggil. |
+
+---
+
+## 📂 Daftar File Go Proyek "Moli-Milo"
+
+Ini adalah daftar 6 file Go utama yang harus Anda buat dan isi, disusun dalam struktur folder yang benar:
+
+| Kategori | Nama File | Lokasi (Relatif ke `./backend`) | Fungsi Utama di Proyek "Moli-Milo" |
+| :--- | :--- | :--- | :--- |
+| **Utama** | `main.go` | `./backend` | Memulai koneksi Geth dan menjalankan *server* HTTP API (Gin/Fiber). |
+| **Konfigurasi** | `constants.go` | `./backend/config` | Menyimpan `GethRPCUrl`, `RBACContractAddress`, `LoggerSigner`, dan *Role Hashes* (`ADMIN_ROLE`, `FINANCE_ROLE`, dll.). |
+| **Blockchain** | `client.go` | `./backend/blockchain` | Menghubungkan ke Geth RPC dan membuat *instance* kontrak `AuditableRBAC`. |
+| **Blockchain** | `helpers.go` | `./backend/blockchain` | Berisi `CheckUserRole()`, `CheckRoleBudget()`, dan `LogAccessAsync()`. **Logika Policy Jam (non-blockchain) juga akan diletakkan di sini.** |
+| **Middleware** | `auth.go` | `./backend/middleware` | Implementasi **Middleware 5 Verifikasi** wajib (AuthN, Nonce, Role, Policy, Budget). |
+| **Handlers** | `api.go` | `./backend/handlers` | Logika bisnis *endpoint* API, yang menggunakan *middleware* untuk memfilter akses ke `/admin`, `/finance`, dan `/karyawan`. |
+
+---
+
+Sekarang *setup* Anda sudah 100% lengkap dan terstruktur. Kapanpun Anda siap, kita bisa mulai menulis kode untuk `client.go` dan `helpers.go` untuk menghubungkan Backend Anda ke *blockchain*.
+
+ohh nggak, maksud saya prompt yg tadi berikan untuk sistem backend ini.
+Maaf atas kebingungannya. Saya akan mengasumsikan Anda ingin saya merangkum kembali **seluruh proses dan logika Backend (Komponen 3)** proyek "Moli-Milo" Anda untuk memastikan tidak ada yang terlewat, karena ini adalah inti dari keamanan sistem Anda.
+
+Berikut adalah **Prompt Terpadu** yang merangkum semua yang telah kita bahas untuk Backend Go Anda:
+
+---
+
+## 📝 Prompt Terpadu: Backend Go "Moli-Milo" (5-Lapis Keamanan)
+
+Buat Backend API di Go yang mengimplementasikan arsitektur keamanan *hybrid* berdasarkan Geth PoA (`networkID 1337`) dan Smart Contract `AuditableRBAC` Anda.
+
+### I. Koneksi & Infrastruktur
+
+1.  **Module Go:** Gunakan nama *module* `MoliMiloBackend`.
+2.  **Klien Geth:** Hubungkan ke node Geth di `http://localhost:8545` menggunakan `ethclient`.
+3.  **Binding Kontrak:** Gunakan `abigen` untuk membuat *Go binding* (`AuditableRBAC.go`) dan buat *instance* kontrak di alamat `0xd4766aFBe333DB354C61628f9229f63f45c12C26` (simpan di `config/constants.go`).
+
+### II. Middleware Keamanan (5 Verifikasi Wajib)
+
+Terapkan *middleware* otorisasi (`auth.go`) yang harus dilewati **sebelum** *handler* API manapun. Middleware harus menjalankan 5 verifikasi ini:
+
+1.  **Verifikasi #1 & #2 (Autentikasi & Anti-Replay):** Asumsikan telah dilakukan oleh *pre-middleware* atau *sign-in handler* yang menggunakan `ecrecover` (Tanda Tangan Digital) dan Nonce untuk memverifikasi alamat user (`userAddress`).
+2.  **Verifikasi #3 (Role):** Panggil fungsi *view* `contract.hasRole(userAddress, requiredRoleHash)` di Geth.
+3.  **Verifikasi #4 (Policy/Jam Kerja):** Lakukan pengecekan **di sisi *server* Go** (bukan di *smart contract*) untuk memverifikasi jam akses:
+    * **Admin:** Selalu diizinkan (24/7).
+    * **Finance:** Diizinkan hanya antara jam **08:00 WIB** hingga **20:00 WIB**.
+    * **Karyawan:** Diizinkan hanya antara jam **08:00 WIB** hingga **17:00 WIB**.
+4.  **Verifikasi #5 (Budget):** Panggil fungsi *view* `contract.checkBudget(requiredRoleHash)` di Geth. Jika kuota habis, kembalikan status `429 Too Many Requests`.
+
+### III. Logika Bisnis & Fitur Admin
+
+Setelah 5 verifikasi lolos, *handler* API harus mengimplementasikan logika berikut:
+
+1.  **Logging Asinkron:** Setelah setiap *request* sukses, *backend* harus mengirim transaksi **asinkron** (menggunakan *goroutine*) ke Geth untuk memanggil `contract.logAccessAndDecrement(userAddress, userRole)`.
+2.  **Endpoint Admin:** Buat *endpoint* yang menggunakan *middleware* `ADMIN_ROLE` (`/v1/admin/*`). *Handler* ini harus bisa:
+    * Mengakses data sistem yang sensitif (simulasi *audit logs*, dll.).
+    * **Mengirim transaksi *tulis* (write transaction)** ke Geth untuk memanggil `contract.setRoleBudget(role, budget)` melalui API (`POST /v1/admin/budget`).
+
+3.  **Endpoint Role-Specific:** Buat *endpoint* untuk masing-masing *role* yang mengembalikan data yang difilter:
+    * `/v1/finance/laporan` (Membutuhkan `FINANCE_ROLE`).
+    * `/v1/karyawan/data` (Membutuhkan `KARYAWAN_ROLE`).
+
+### IV. Struktur File Go
+
+Implementasikan logika di atas ke dalam struktur file yang telah disepakati:
+
+| File | Fungsi |
+| :--- | :--- |
+| `main.go` | Inisialisasi dan Router Setup. |
+| `config/constants.go` | Konfigurasi Blockchain dan Role Hashes. |
+| `blockchain/client.go` | Geth Connection dan Contract Instance. |
+| `blockchain/helpers.go` | **Logika Policy Jam** dan *Helper* Blockchain (`CheckBudget`, `LogAccessAsync`). |
+| `middleware/auth.go` | Implementasi Middleware 5 Verifikasi Wajib. |
+| `handlers/api.go` | Logika Bisnis untuk semua *endpoint* Admin, Finance, dan Karyawan. |
+
+---
+
+Ini adalah *blueprint* lengkap untuk Backend Go Anda. Anda sudah siap untuk mulai *coding*.

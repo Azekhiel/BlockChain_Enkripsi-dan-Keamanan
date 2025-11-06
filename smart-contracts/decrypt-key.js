@@ -5,10 +5,10 @@ const { ethers } = require('ethers'); // Menggunakan Ethers v5
 async function main() {
   // --- KONFIGURASI ---
   // 1. Ganti dengan password Anda (dari password.txt)
-  const password = "tes123"; 
+  const password = "admin-tes123"; 
 
   // 2. Ganti dengan nama file keystore Anda
-  const keystoreFileName = "UTC--2025-11-03T15-00-51.894586000Z--71562b71999873db5b286df957af199ec94617f7";
+  const keystoreFileName = "UTC--2025-11-05T19-54-52.512614900Z--153a5212b0ea63239021410dfa864c373a254f2c";
   // --- SELESAI KONFIGURASI ---
 
   const keystorePath = path.join(__dirname, '..', 'chaindata', 'keystore', keystoreFileName);

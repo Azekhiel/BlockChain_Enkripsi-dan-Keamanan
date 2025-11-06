@@ -1,0 +1,20 @@
+=============== Nov 6, 2025 (+07) ===============
+03:21:26.774356 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+03:21:26.791647 db@open opening
+03:21:26.795283 version@stat F·[] S·0B[] Sc·[]
+03:21:26.801597 db@janitor F·2 G·0
+03:21:26.801597 db@open done T·9.9503ms
+03:21:26.892968 db@close closing
+03:21:26.893956 db@close done T·988µs
+=============== Nov 6, 2025 (+07) ===============
+03:21:41.340913 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+03:21:41.342910 version@stat F·[] S·0B[] Sc·[]
+03:21:41.343911 db@open opening
+03:21:41.344911 journal@recovery F·1
+03:21:41.495198 journal@recovery recovering @1
+03:21:41.500046 memdb@flush created L0@2 N·18 S·1KiB "H\xbb\xe0..@\x9a$,v11":"\xfa(i..I{Q,v4"
+03:21:41.506047 version@stat F·[1] S·1KiB[1KiB] Sc·[0.25]
+03:21:41.518679 db@janitor F·3 G·0
+03:21:41.518679 db@open done T·174.7676ms
+08:24:18.537287 db@close closing
+08:24:18.541777 db@close done T·5.0218ms

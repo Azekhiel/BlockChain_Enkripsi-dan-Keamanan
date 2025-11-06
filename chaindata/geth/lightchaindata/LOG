@@ -1,0 +1,8 @@
+=============== Nov 6, 2025 (+07) ===============
+03:21:26.910176 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+03:21:26.928392 db@open opening
+03:21:26.933902 version@stat F·[] S·0B[] Sc·[]
+03:21:26.938871 db@janitor F·2 G·0
+03:21:26.938871 db@open done T·10.4795ms
+03:21:26.983993 db@close closing
+03:21:26.984498 db@close done T·0s

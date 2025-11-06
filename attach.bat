@@ -1,2 +1,2 @@
 @echo off
-geth attach \\.\pipe\geth.ipc
+geth attach \\.\pipe\chaindata\geth.ipc

@@ -1,0 +1,23 @@
+@echo off
+echo ==========================================
+echo Menjalankan Node Geth (Mode KUSTOM PoA)
+echo ==========================================
+echo Jangan tutup jendela ini.
+echo.
+echo Node ini akan otomatis unlock dan mining.
+echo.
+
+geth --datadir .\chaindata ^
+--networkid 1337 ^
+--http ^
+--http.addr "localhost" ^
+--http.port 8545 ^
+--http.api "eth,net,web3" ^
+--ipcpath \\.\pipe\chaindata\geth.ipc ^
+--password ./password.txt ^
+--unlock "0x8ec523694500708Da12dBAB33A1f5f598dFA3cd6" ^
+--mine
+
+echo.
+echo Node Geth dihentikan.
+pause

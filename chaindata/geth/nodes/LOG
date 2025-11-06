@@ -1,33 +1,8 @@
-=============== Nov 3, 2025 (+07) ===============
-22:06:55.367076 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-22:06:55.373324 db@open opening
-22:06:55.375177 version@stat F·[] S·0B[] Sc·[]
-22:06:55.377910 db@janitor F·2 G·0
-22:06:55.377910 db@open done T·4.5864ms
-22:29:36.142214 db@close closing
-22:29:36.142732 db@close done T·518.1µs
-=============== Nov 4, 2025 (+07) ===============
-23:17:30.922423 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-23:17:30.924421 version@stat F·[] S·0B[] Sc·[]
-23:17:30.925419 db@open opening
-23:17:30.925419 journal@recovery F·1
-23:17:30.926604 journal@recovery recovering @1
-23:17:30.934287 memdb@flush created L0@2 N·2 S·181B "loc..seq,v2":"version,v1"
-23:17:30.934795 version@stat F·[1] S·181B[181B] Sc·[0.25]
-23:17:30.964013 db@janitor F·3 G·0
-23:17:30.964013 db@open done T·38.594ms
-=============== Nov 5, 2025 (+07) ===============
-10:41:29.076921 db@close closing
-10:41:29.080113 db@close done T·3.1921ms
-=============== Nov 5, 2025 (+07) ===============
-10:41:36.141260 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
-10:41:36.142298 version@stat F·[1] S·181B[181B] Sc·[0.25]
-10:41:36.142298 db@open opening
-10:41:36.147893 journal@recovery F·1
-10:41:36.148927 journal@recovery recovering @3
-10:41:36.152920 memdb@flush created L0@5 N·1 S·162B "loc..seq,v4":"loc..seq,v4"
-10:41:36.154702 version@stat F·[2] S·343B[343B] Sc·[0.50]
-10:41:36.170821 db@janitor F·4 G·0
-10:41:36.170821 db@open done T·28.5227ms
-11:03:03.849450 db@close closing
-11:03:03.850449 db@close done T·999µs
+=============== Nov 6, 2025 (+07) ===============
+03:21:41.579830 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+03:21:41.590831 db@open opening
+03:21:41.592832 version@stat F·[] S·0B[] Sc·[]
+03:21:41.597833 db@janitor F·2 G·0
+03:21:41.597833 db@open done T·7.0021ms
+08:24:18.549266 db@close closing
+08:24:18.551292 db@close done T·2.0261ms

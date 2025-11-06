@@ -1,0 +1,47 @@
+// middleware/auth.go
+package middleware
+
+import (
+    "net/http"
+    "your_project/config"
+    "your_project/helpers"
+    "your_project/blockchain" // Klien Geth Anda
+)
+
+// AuthMiddleware adalah 5 Verifikasi Wajib Anda
+func AuthMiddleware(requiredRoleHash string) func(c *gin.Context) {
+    return func(c *gin.Context) {
+        // --- 1 & 2. AuthN & Anti-Replay (Asumsikan di-handle oleh Pre-Middleware) ---
+        // Asumsikan di sini Anda sudah mendapat Alamat User & Nonce sudah terverifikasi.
+        // Dapatkan userAddress dari JWT/session (yang dibuat setelah sign-in sukses)
+        userAddress := c.MustGet("userAddress").(string) 
+        userRole := "" // Role Hash akan didapat di Verifikasi 3
+
+        // --- 3. Verifikasi Role (contract.hasRole) ---
+        // (Ini Read Call ke Geth)
+        hasRole, err := blockchain.CheckUserRole(userAddress, requiredRoleHash)
+        if err != nil || !hasRole {
+            c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "403 Forbidden: Role tidak diizinkan untuk endpoint ini."})
+            return
+        }
+        
+        // --- 4. Verifikasi Policy (Jam Kerja) ---
+        if !helpers.CheckPolicyServerSide(requiredRoleHash) {
+            c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "403 Forbidden: Akses di luar jam kerja yang ditentukan (Policy)."})
+            return
+        }
+
+        // --- 5. Verifikasi Budget (contract.checkBudget) ---
+        // (Ini Read Call ke Geth)
+        isBudgetAvailable, err := blockchain.CheckRoleBudget(requiredRoleHash)
+        if err != nil || !isBudgetAvailable {
+            c.AbortWithStatusJSON(http.StatusTooManyRequests, gin.H{"error": "429 Too Many Requests: Kuota akses habis (Budget)."})
+            return
+        }
+
+        // Simpan Role untuk Handler berikutnya (misal: untuk logging)
+        c.Set("userRole", requiredRoleHash) 
+        
+        c.Next() // Lanjut ke Handler API
+    }
+}
