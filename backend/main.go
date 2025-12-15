@@ -30,7 +30,7 @@ import (
 
 // --- Variabel Global ---
 // Alamat Kontrak AuditableRBAC (Hasil Deploy Anda)
-var contractAddress = common.HexToAddress("0xd4766aFBe333DB354C61628f9229f63f45c12C26")
+var contractAddress = common.HexToAddress("0xa09369c24B596684d7dD4b16EaE418dd014FC413")
 var contractABI abi.ABI
 var ethClient *ethclient.Client
 
